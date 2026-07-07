@@ -1,0 +1,198 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Visualizer — E-commerce Image Toolkit</title>
+<meta name="description" content="A toolkit of Python utilities for e-commerce product imagery: background removal, bulk resizing, image scraping, downloading, and Photoshop sticker automation.">
+
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#ffffff; --ink:#131722; --muted:#5b6472;
+    --line:#e7eaf0; --brand:#5b5bf5; --brand-ink:#ffffff; --accent:#0fb98a;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0c0e14; --panel:#141822; --ink:#eef1f6; --muted:#9aa4b2;
+      --line:#232838; --brand:#7d7dff; --accent:#2bd4a0;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f7f8fa; --panel:#ffffff; --ink:#131722; --muted:#5b6472;
+    --line:#e7eaf0; --brand:#5b5bf5; --accent:#0fb98a;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c0e14; --panel:#141822; --ink:#eef1f6; --muted:#9aa4b2;
+    --line:#232838; --brand:#7d7dff; --accent:#2bd4a0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+
+  header{
+    padding:64px 0 40px; text-align:center;
+    background:
+      radial-gradient(60% 120% at 50% -10%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 60%);
+  }
+  .badge{
+    display:inline-block; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); border:1px solid var(--line); border-radius:999px;
+    padding:6px 14px; margin-bottom:20px; background:var(--panel);
+  }
+  h1{font-size:clamp(32px,6vw,52px); line-height:1.08; margin:0 0 14px; letter-spacing:-.02em}
+  h1 .grad{background:linear-gradient(90deg,var(--brand),var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lede{max-width:640px; margin:0 auto 28px; color:var(--muted); font-size:clamp(16px,2.2vw,19px)}
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:12px 22px; border-radius:12px; font-weight:600; border:1px solid var(--line);
+    background:var(--panel); color:var(--ink); transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+  .btn.primary{background:var(--brand); color:var(--brand-ink); border-color:transparent}
+
+  section{padding:44px 0}
+  h2{font-size:clamp(22px,4vw,30px); letter-spacing:-.01em; margin:0 0 6px}
+  .sub{color:var(--muted); margin:0 0 28px}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:22px; box-shadow:var(--shadow); display:flex; flex-direction:column;
+  }
+  .ico{
+    width:44px; height:44px; border-radius:11px; display:grid; place-items:center;
+    font-size:22px; margin-bottom:14px;
+    background:color-mix(in srgb, var(--brand) 14%, transparent);
+  }
+  .card h3{margin:0 0 6px; font-size:18px}
+  .card p{margin:0 0 16px; color:var(--muted); font-size:14.5px; flex:1}
+  .tags{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px}
+  .tag{font-size:11.5px; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:3px 8px}
+  .card a.src{
+    text-decoration:none; font-weight:600; font-size:14px; color:var(--brand);
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .card a.src:hover{text-decoration:underline}
+
+  .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px}
+  .step{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px}
+  .step .n{font-weight:700; color:var(--brand); font-size:13px; letter-spacing:.06em}
+  .step h4{margin:8px 0 6px; font-size:16px}
+  .step p{margin:0; color:var(--muted); font-size:14px}
+  code{background:color-mix(in srgb, var(--muted) 16%, transparent); padding:2px 6px; border-radius:6px; font-size:.9em}
+
+  .note{
+    background:color-mix(in srgb, var(--accent) 10%, transparent);
+    border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius:14px; padding:18px 20px; color:var(--ink); font-size:14.5px;
+  }
+
+  footer{padding:40px 0 60px; text-align:center; color:var(--muted); font-size:13.5px; border-top:1px solid var(--line); margin-top:20px}
+  footer a{color:var(--brand); text-decoration:none}
+</style>
+
+<div id="top"></div>
+<header>
+  <div class="wrap">
+    <span class="badge">E-commerce Image Toolkit</span>
+    <h1>Product <span class="grad">Visualizer</span></h1>
+    <p class="lede">A collection of Python utilities that automate the boring parts of e-commerce
+    product imagery — removing backgrounds, resizing in bulk, scraping and downloading catalog
+    images, and stamping campaign stickers straight from Photoshop.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/faysal580/Product-Visualizer" target="_blank" rel="noopener">View on GitHub</a>
+      <a class="btn" href="#tools">Explore the tools</a>
+    </div>
+  </div>
+</header>
+
+<section id="tools" class="wrap">
+  <h2>The toolkit</h2>
+  <p class="sub">Six standalone scripts — each does one job well. Drop your files in, run, collect the output.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="ico">🪄</div>
+      <h3>Photoroom Lite</h3>
+      <p>AI background removal (rembg) that cleanly cuts out the product and re-centers it on a pure-white 1080×1080 canvas, filling ~92% of the frame.</p>
+      <div class="tags"><span class="tag">rembg</span><span class="tag">Pillow</span><span class="tag">NumPy</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/Photoroom%20Lite" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+    <div class="card">
+      <div class="ico">📐</div>
+      <h3>Bulk Resize</h3>
+      <p>Squares every image with white padding, resizes to 1080×1080, and saves the best-quality JPG that stays under 940&nbsp;KB using adaptive compression.</p>
+      <div class="tags"><span class="tag">Pillow</span><span class="tag">batch</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/Bulk%20resize" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+    <div class="card">
+      <div class="ico">🔎</div>
+      <h3>Daraz Image Scraper</h3>
+      <p>Auto-detects any <code>.xlsx</code> of product URLs, visits each page, and extracts up to 5 full-size image links — writing an updated spreadsheet.</p>
+      <div class="tags"><span class="tag">requests</span><span class="tag">BeautifulSoup</span><span class="tag">Selenium</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/Product%20Image%20Scraper%20(Daraz%20100%25)" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+    <div class="card">
+      <div class="ico">🧵</div>
+      <h3>Image URL Extractor</h3>
+      <p>Headless, multithreaded Selenium crawler that pulls image URLs from a column of product links — fast, with retries and randomized pacing.</p>
+      <div class="tags"><span class="tag">Selenium</span><span class="tag">pandas</span><span class="tag">threads</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/Daraz%20Product%20Image%20Scrape" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+    <div class="card">
+      <div class="ico">⬇️</div>
+      <h3>Image Downloader</h3>
+      <p>Downloads images from a CSV of links (single, multi, or original-name modes), converts them, and pads to a clean 1080×1080 white canvas — in parallel.</p>
+      <div class="tags"><span class="tag">requests</span><span class="tag">Pillow</span><span class="tag">CSV</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/Single%20or%20Multiple%20Image%20Downloader" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+    <div class="card">
+      <div class="ico">🏷️</div>
+      <h3>Custom Sticker Placer</h3>
+      <p>Drives Photoshop via COM to batch-insert product images into a campaign PSD template at a fixed position — perfect for price/campaign overlays.</p>
+      <div class="tags"><span class="tag">win32com</span><span class="tag">Photoshop</span><span class="tag">PSD</span></div>
+      <a class="src" href="https://github.com/faysal580/Product-Visualizer/tree/main/custom%20positioned%20sticker" target="_blank" rel="noopener">View source →</a>
+    </div>
+
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>How it works</h2>
+  <p class="sub">Every tool follows the same simple, folder-based workflow.</p>
+  <div class="steps">
+    <div class="step"><div class="n">01</div><h4>Install Python</h4><p>Grab Python 3.9+ and install each tool's dependencies with <code>pip install</code>.</p></div>
+    <div class="step"><div class="n">02</div><h4>Add your files</h4><p>Drop images into the <code>input</code> folder, or point the scraper at your <code>.xlsx</code> / <code>.csv</code>.</p></div>
+    <div class="step"><div class="n">03</div><h4>Run the script</h4><p>Double-click the <code>run.bat</code> or run <code>python &lt;script&gt;.py</code> from a terminal.</p></div>
+    <div class="step"><div class="n">04</div><h4>Collect output</h4><p>Processed images and updated spreadsheets land in the <code>output</code> folder.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="note">
+    <strong>Note:</strong> these are <em>desktop</em> Python tools — they run on your own machine, not in the browser.
+    This page is the project's live showcase and documentation. Head to the
+    <a href="https://github.com/faysal580/Product-Visualizer" target="_blank" rel="noopener">GitHub repository</a>
+    to download and run any tool.
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Product Visualizer · built by <a href="https://github.com/faysal580" target="_blank" rel="noopener">faysal580</a> ·
+    <a href="https://github.com/faysal580/Product-Visualizer" target="_blank" rel="noopener">Source on GitHub</a>
+  </div>
+</footer>
